@@ -282,7 +282,7 @@ private:
     t.setDisplaySurface(mVirtualDisplay, mBufferProducer);
     t.setDisplayProjection(mVirtualDisplay,
       android::ui::ROTATION_0, layerStackRect, visibleRect);
-    t.setDisplayLayerStack(mVirtualDisplay, android::ui::DEFAULT_LAYER_STACK); // default stack
+    t.setDisplayLayerStack(mVirtualDisplay, 0); // default stack
     t.apply();
 
     mHaveRunningDisplay = true;
@@ -345,12 +345,12 @@ private:
 int
 minicap_try_get_display_info(int32_t displayId, Minicap::DisplayInfo* info) {
   android::status_t err;
-  auto mDisplayId = android::DisplayId::fromValue(static_cast<uint64_t>(displayId));
-  android::sp<android::IBinder> dpy = android::SurfaceComposerClient::getPhysicalDisplayToken(*android::PhysicalDisplayId::tryCast(*mDisplayId));
+  android::sp<android::IBinder> dpy = android::SurfaceComposerClient::getPhysicalDisplayToken(android::PhysicalDisplayId(displayId));
   if(!dpy) {
     MCINFO("could not get display for id: %d, using internal display", displayId);
     dpy = android::SurfaceComposerClient::getInternalDisplayToken();
-  }  
+  }
+
   android::ui::StaticDisplayInfo dinfo;
   err = android::SurfaceComposerClient::getStaticDisplayInfo(dpy, &dinfo);
   if (err != android::NO_ERROR) {
@@ -382,6 +382,7 @@ minicap_try_get_display_info(int32_t displayId, Minicap::DisplayInfo* info) {
   info->ydpi = dconfig.yDpi;
   info->secure = dinfo.secure;
   info->size = sqrt(pow(viewport.getWidth() / dconfig.xDpi, 2) + pow(viewport.getWidth() / dconfig.yDpi, 2));
+
   return 0;
 }
 

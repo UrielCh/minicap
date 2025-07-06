@@ -1,20 +1,24 @@
 LOCAL_PATH := $(call my-dir)
+
+include $(CLEAR_VARS)
+
+LOCAL_MODULE := jpeg
+LOCAL_SRC_FILES := vendor/libjpeg-turbo/libjpeg.a
+
+include $(PREBUILT_STATIC_LIBRARY)
+
+include $(BUILD_STATIC_LIBRARY)
+
 include $(CLEAR_VARS)
 
 LOCAL_MODULE := minicap-common
 
-LOCAL_SRC_FILES := \
-	JpgEncoder.cpp \
-	SimpleServer.cpp \
-	minicap.cpp \
+LOCAL_SRC_FILES := 
+	JpgEncoder.cpp 
+	SimpleServer.cpp 
+	minicap.cpp 
 
-LOCAL_STATIC_LIBRARIES := \
-	libjpeg-turbo \
-
-LOCAL_SHARED_LIBRARIES := \
-	minicap-shared \
-
-include $(BUILD_STATIC_LIBRARY)
+LOCAL_STATIC_LIBRARIES := jpeg
 
 include $(CLEAR_VARS)
 
