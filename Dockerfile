@@ -17,11 +17,7 @@ RUN mkdir -p /opt/android && \
     mv android-ndk-r25b ndk-bundle
 
 # Copy project files
-COPY . /opt/minicap
-COPY .git ./.git
-COPY .gitmodules ./.gitmodules
-RUN git config --global http.sslVerify false
-RUN git submodule sync && git submodule update --init
+
 
 # Install libjpeg-turbo 3.1.1
 RUN cd /opt &&     wget --no-check-certificate https://github.com/libjpeg-turbo/libjpeg-turbo/archive/refs/tags/3.1.1.tar.gz -O libjpeg-turbo-3.1.1.tar.gz &&     tar xzf libjpeg-turbo-3.1.1.tar.gz &&     rm libjpeg-turbo-3.1.1.tar.gz
@@ -30,13 +26,27 @@ RUN ls -F /opt/libjpeg-turbo-3.1.1/
 WORKDIR /opt/libjpeg-turbo-3.1.1
 RUN cmake -G"Unix Makefiles" -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=Release -DENABLE_SHARED=OFF -DENABLE_STATIC=ON .
 RUN make && make install
+
+# Copy project files after libjpeg-turbo is installed
+COPY . /opt/minicap
+COPY .git ./.git
+COPY .gitmodules ./.gitmodules
+RUN git config --global http.sslVerify false
+RUN git submodule sync && git submodule update --init
+
+# Copy the built libjpeg.a to the minicap project's vendor directory
 RUN cp /usr/lib/x86_64-linux-gnu/libjpeg.a /opt/minicap/jni/vendor/libjpeg-turbo/libjpeg.a
 
+WORKDIR /opt/minicap
 
+
+RUN mkdir -p jni/vendor/libjpeg-turbo/include
+RUN cp /usr/include/turbojpeg.h /opt/minicap/jni/vendor/libjpeg-turbo/include/turbojpeg.h
+RUN ls -l /opt/minicap/jni/vendor/libjpeg-turbo/include/turbojpeg.h
+
+RUN ls -l jni/minicap-shared/aosp/include/Minicap.hpp
 
 # Build the project
-RUN make
-RUN mkdir -p /output/armeabi-v7a/android-33 &&     cp prebuilt/armeabi-v7a/lib/android-33/minicap.so /output/armeabi-v7a/android-33/minicap.so
-RUN mkdir -p /output/arm64-v8a/android-33 &&     cp prebuilt/arm64-v8a/lib/android-33/minicap.so /output/arm64-v8a/android-33/minicap.so
-RUN mkdir -p /output/x86/android-33 &&     cp prebuilt/x86/lib/android-33/minicap.so /output/x86/android-33/minicap.so
-RUN mkdir -p /output/x86_64/android-33 &&     cp prebuilt/x86_64/lib/android-33/minicap.so /output/x86_64/android-33/minicap.so
+# RUN make prebuilt
+# RUN ls -l libs/armeabi-v7a/
+# RUN ls -R prebuilt
